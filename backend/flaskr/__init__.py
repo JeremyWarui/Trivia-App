@@ -1,6 +1,5 @@
 from crypt import methods
 import os
-from tracemalloc import start
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -111,26 +110,26 @@ def create_app(test_config=None):
     """
     @app.route("/questions/<int:question_id>", methods=["DELETE"])
     def delete_question(question_id):
-
         try:
-            question = Question.query.filter_by(id=question_id).one_or_none()
-            
-            if not question:
+            question = Question.query.filter_by(id=str(question_id))
+
+            if question is None:
                 abort(404)
 
             question.delete()
-            
-            # # send back the current books, to update front end
-            # selection = Question.query.order_by(Question.id).all()
-            # questions = paginate(request, selection)
+
+            questions = Question.query.all()
+            formatted_questions = paginate(request, questions)
 
             return jsonify({
-                "success":True,
+                'success': True,
+                'deleted': question_id,
+                "questions": formatted_questions,
+                "total_questions": len(questions)
             })
-        
+           
         except:
-            abort(404)
-   
+            abort(422)
 
     """
     @TODO:
@@ -144,33 +143,39 @@ def create_app(test_config=None):
     """
     @app.route("/questions/add", methods=["POST"])
     def add_question():
-
         try:
             data = request.get_json()
-            new_question = Question({
-                'id': data["id"],
-                'question': data["question"],
-                'answer': data["answer"],
-                'category': data["category"],
-                'difficulty': int(data["difficulty"])
-            })
 
-            new_question.insert()
+            new_question = data["question"]
+            new_answer = data["answer"]
+            new_category = data["category"]
+            new_difficulty = data["difficulty"]
 
-            # send back the current questions, to update front end
-            selection = Question.query.order_by(Question.id).all()
-            current_questions = paginate(request, selection)
+            if (len(new_question) == 0) or (len(new_answer) == 0) or (len(new_category) == 0) or (len(new_difficulty) == 0):
+                abort(422)
+
+                
+            question = Question(
+                question=new_question,
+                answer=new_answer,
+                category=new_category,
+                difficulty=new_difficulty
+            )
+
+            question.insert()
+
+            questions = Question.query.all()
+            formatted_questions = paginate(request, questions)
 
             return jsonify({
                 "success": True,
-                "added": new_question.id,
-                "questions": current_questions,
-                "total_questions": len(selection)
+                "created": question.id,
+                "question": formatted_questions,
+                "total_questions": len(questions)
             })
-        
+
         except:
             abort(400)
-
 
     """
     @TODO:
@@ -196,9 +201,9 @@ def create_app(test_config=None):
             formatted_questions = [question.format() for question in questions]
 
             return jsonify({
+                "success": True,
                 "questions": formatted_questions,
                 "totalQuestions": len(questions),
-                "currentCategory": None
             })
 
         except:
@@ -216,21 +221,23 @@ def create_app(test_config=None):
     """
     @app.route("/categories/<int:category_id>/questions")
     def get_question_in_category(category_id):
+        category = Category.query.get(category_id)
 
-        category = Category.query.filter_by(id=category_id).one_or_none()
+        if (category is None):
+            abort(404)
+        
+        try:
+            questions = Question.query.filter_by(category=category_id).all()
 
-        if category:
-            questions = Question.query.filter_by(category=str(category_id)).all()
-            formatted_questions = [question.format() for question in questions]
-
+            formatted_questions = paginate(request, questions)
 
             return jsonify({
-                'questions': formatted_questions,
-                'totalQuestions': len(questions)
+                "success": True,
+                "questions": formatted_questions,
+                "total_questions": len(questions)
             })
-
-        else:
-            abort(404)
+        except:
+            abort(500)
 
 
     """
@@ -248,43 +255,45 @@ def create_app(test_config=None):
     @app.route("/quizzes", methods=['POST'])
 
     def get_questions_for_quiz():
-
+        
         data = request.get_json()
-
-
         try:
+            category = data["quiz_category"]
             previous_questions = data["previous_questions"]
-            quiz_category = data["quiz_category"]
+        except:
+            abort(400)
+        
+        if category:
+            questions = Question.query.filter_by(category=Question.category).all()
 
-            if (quiz_category['id'] == 0):
-                questions = Question.query.all()
-            else:
-                questions = Question.query.filter_by(category=quiz_category['id']).all()
+        else:
+            questions = Question.query.all()
+        
+        # to get random que
+        def get_random_question():
+            next_question = random.choice(questions).format()
+            return next_question
 
-            random_index = random.randint(0, len(questions) - 1)
-            next_question = questions[random_index]
+        next_question = get_random_question()
 
-            still_questions = True
-            while next_question.id not in previous_questions:
-                next_question = questions[random_index]
+        #boolean to check if it was asked
+        asked = False
+        if next_question['id'] in previous_questions:
+            asked = True
+        
+        while asked:
+            next_question = random.choice(questions).format()
 
+            if (len(previous_questions) == len(questions)):
                 return jsonify({
-                    'success': True,
-                    'question': {
-                        "answer": next_question.answer,
-                        "category": next_question.category,
-                        "difficulty": next_question.difficulty,
-                        "id": next_question.id,
-                        "question": next_question.question
-                    },
-                    "previous_question": previous_questions
-                })
+                    "success": True,
+                    "message": "Game over"
+                }), 200
 
-
-        except Exception:
-            abort(404)
-
-
+        return jsonify({
+            "success": True,
+            "question": next_question
+        })
 
     """
     @TODO:
