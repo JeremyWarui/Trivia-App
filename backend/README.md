@@ -55,7 +55,7 @@ These are the files you'd want to edit in the backend:
 1. `backend/flaskr/__init__.py`
 2. `backend/test_flaskr.py`
 
-One note before you delve into your tasks: for each endpoint, you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior.
+Tasks done: defined endpoint and response data for each endpoint.
 
 1. Use Flask-CORS to enable cross-domain requests and set response headers.
 2. Create an endpoint to handle `GET` requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories.
@@ -69,30 +69,11 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 ## Documenting your Endpoints
 
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
-
-### Documentation Example
-
-`GET '/api/v1.0/categories'`
-
-- Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
-- Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
-
-```json
-{
-  "1": "Science",
-  "2": "Art",
-  "3": "Geography",
-  "4": "History",
-  "5": "Entertainment",
-  "6": "Sports"
-}
-```
+[API DOCUMENTATION](./DOCUMENTATION.md)
 
 ## Testing
 
-Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
+At least one test for the success and at least one error behavior of each endpoint using the unittest library.
 
 To deploy the tests, run
 

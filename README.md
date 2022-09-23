@@ -38,12 +38,8 @@ The [frontend](./frontend/README.md) directory contains a complete React fronten
 1. What are the end points and HTTP methods the frontend is expecting to consume?
 2. How are the requests from the frontend formatted? Are they expecting certain parameters or payloads?
 
-Pay special attention to what data the frontend is expecting from each API response to help guide how you format your API. The places where you may change the frontend behavior, and where you should be looking for the above information, are marked with `TODO`. These are the files you'd want to edit in the frontend:
+### API Documentation
 
-1. `frontend/src/components/QuestionView.js`
-2. `frontend/src/components/FormView.js`
-3. `frontend/src/components/QuizView.js`
-
-By making notes ahead of time, you will practice the core skill of being able to read and understand code and will have a simple plan to follow to build out the endpoints of your backend API.
+Find the documentation of the API in [API Doc](./backend/DOCUMENTATION.md)
 
 > View the [Frontend README](./frontend/README.md) for more details.
