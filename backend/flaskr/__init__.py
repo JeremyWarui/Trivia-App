@@ -146,23 +146,15 @@ def create_app(test_config=None):
         try:
             data = request.get_json()
 
-            new_question = data["question"]
-            new_answer = data["answer"]
-            new_category = data["category"]
-            new_difficulty = data["difficulty"]
-
-            if (len(new_question) == 0) or (len(new_answer) == 0) or (len(new_category) == 0) or (len(new_difficulty) == 0):
-                abort(422)
-
-                
-            question = Question(
-                question=new_question,
-                answer=new_answer,
-                category=new_category,
-                difficulty=new_difficulty
-            )
-
-            question.insert()
+            if (data["answer"] != ""):
+                question = Question(
+                question=data["question"],
+                answer=data["answer"],
+                category=data["category"],
+                difficulty=data["difficulty"]
+                )
+        
+                question.insert()
 
             questions = Question.query.all()
             formatted_questions = paginate(request, questions)
@@ -263,36 +255,19 @@ def create_app(test_config=None):
         except:
             abort(400)
         
-        if category:
-            questions = Question.query.filter_by(category=Question.category).all()
+        if (category):
+            qn_not_in_prev = Question.id.not_in((previous_questions))
+            questions = Question.query.filter(qn_not_in_prev).all()
 
         else:
-            questions = Question.query.all()
-        
-        # to get random que
-        def get_random_question():
-            next_question = random.choice(questions).format()
-            return next_question
-
-        next_question = get_random_question()
-
-        #boolean to check if it was asked
-        asked = False
-        if next_question['id'] in previous_questions:
-            asked = True
-        
-        while asked:
-            next_question = random.choice(questions).format()
-
-            if (len(previous_questions) == len(questions)):
-                return jsonify({
-                    "success": True,
-                    "message": "Game over"
-                }), 200
-
+            qn_not_in_prev = Question.id.not_in(previous_questions)
+            qns_with_same_id = Question.query.filter_by(category=category['id'])
+            questions = qns_with_same_id.filter(qn_not_in_prev).all()
+  
+        question = random.choice(questions).format() if questions else None
         return jsonify({
             "success": True,
-            "question": next_question
+            "question": question
         })
 
     """
