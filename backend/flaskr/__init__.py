@@ -254,14 +254,19 @@ def create_app(test_config=None):
             previous_questions = data["previous_questions"]
         except:
             abort(400)
-        
+        #if catgeory exists check if not in previous questions 
         if (category):
+            # questions not in previous questions using notin
             qn_not_in_prev = Question.id.not_in((previous_questions))
+            # use the questions not in previous questions to filter
             questions = Question.query.filter(qn_not_in_prev).all()
 
         else:
+             # questions not in previous questions using notin
             qn_not_in_prev = Question.id.not_in(previous_questions)
+            # use the id of the category to check the id of qns in same category
             qns_with_same_id = Question.query.filter_by(category=category['id'])
+            # use that to filter through all questions
             questions = qns_with_same_id.filter(qn_not_in_prev).all()
   
         question = random.choice(questions).format() if questions else None
